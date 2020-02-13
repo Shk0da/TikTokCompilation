@@ -33,13 +33,12 @@ foreach ($urls as $url) {
 	    	echo "skipped...";
 	    	continiue;
 	    }
-
+	    
 	    $fileName = "file_" . $ind++ . ".mp4";
 	    download($src, $downloadFolder . "/" . $fileName);
-	    fwrite($donloadedFile, "file '" . $fileName . "'\n");
+	    fwrite($donloadedFile, $fileName . "\n");
 	    echo $fileName . " downloaded!\n";
 	}
-
 	sleep(5);
 }
 fwrite($donloadedFile, "file '../end.mp4'\n");
@@ -47,9 +46,41 @@ fclose($donloadedFile);
 
 echo "\n\nStart compilation... \n";
 unlink("compilation.mp4");
-$ffmpegCommand = "ffmpeg -f concat -safe 0 -i \"".$downloadFolder . "/downloaded.txt\""." -c copy compilation.mp4";
-echo $ffmpegCommand . "\n";
-exec($ffmpegCommand);   
+compile($downloadFolder . "/downloaded.txt");
+
+function compile($downloadFile) {
+    $paths = [];
+    $files = fopen($downloadFile, "r");
+    while (!feof($files)) {
+        $current_line = fgets($files);
+        $paths[] = trim(str_replace("\r\n","",$current_line));
+    }
+
+    $ffmpegCommand = "ffmpeg -y -loglevel warning ";
+    foreach ($paths as $path) {
+        $ffmpegCommand = $ffmpegCommand . "-i ".$path." ";
+    }
+
+    $ffmpegCommand = $ffmpegCommand . "-filter_complex ";
+    $ffmpegCommand = $ffmpegCommand . "\"";
+
+    $inc = 0;
+    foreach ($paths as $path) {
+        $ffmpegCommand = $ffmpegCommand . "[".$inc.":v]scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p[v".$inc."]; ";
+        $inc++;
+    }
+    $inc = 0;
+    foreach ($paths as $path) {
+        $ffmpegCommand = $ffmpegCommand . "[v".$inc."][".$inc.":a]";
+        $inc++;
+    }
+    $ffmpegCommand = $ffmpegCommand . " concat=n=".$inc.":v=1:a=1[v][a]";
+    $ffmpegCommand = $ffmpegCommand . "\"";
+    $ffmpegCommand = $ffmpegCommand . " -map \"[v]\" -map \"[a]\" -c:v libx264 -c:a aac -movflags +faststart compilation.mp4";
+
+    echo $ffmpegCommand . "\n\n";
+    exec($ffmpegCommand);
+}
 
 function download($url, $output)
 {
