@@ -1,7 +1,11 @@
 <?php 
 
 $downloadFolder = "download";
-delete_directory($downloadFolder);
+/*
+if (file_exists($downloadFolder) { 
+    delete_directory($downloadFolder);
+}
+
 mkdir($downloadFolder, 0777, true);
 
 $urls = [];
@@ -12,7 +16,11 @@ while (!feof($fileWithURLs)) {
 }
 
 $ind = 0;
-unlink($downloadFolder . "/downloaded.txt");
+
+if (file_exists($downloadFolder . "/downloaded.txt")) { 
+    unlink($downloadFolder . "/downloaded.txt");
+}
+
 $donloadedFile = fopen($downloadFolder . "/downloaded.txt", "w");
 foreach ($urls as $url) {
 	echo $url . "\n";
@@ -41,16 +49,20 @@ foreach ($urls as $url) {
 	}
 	sleep(5);
 }
-fwrite($donloadedFile, "file '../end.mp4'\n");
-fclose($donloadedFile);
+fwrite($donloadedFile, "../end.mp4");
+fclose($donloadedFile);*/
 
 echo "\n\nStart compilation... \n";
-unlink("compilation.mp4");
-compile($downloadFolder . "/downloaded.txt");
 
-function compile($downloadFile) {
+if (file_exists("compilation.mp4")) {
+    unlink("compilation.mp4");
+}
+
+compile($downloadFolder, "/downloaded.txt");
+
+function compile($downloadFolder, $downloadFile) {
     $paths = [];
-    $files = fopen($downloadFile, "r");
+    $files = fopen($downloadFolder . $downloadFile, "r");
     while (!feof($files)) {
         $current_line = fgets($files);
         $paths[] = trim(str_replace("\r\n","",$current_line));
@@ -58,7 +70,7 @@ function compile($downloadFile) {
 
     $ffmpegCommand = "ffmpeg -y -loglevel warning ";
     foreach ($paths as $path) {
-        $ffmpegCommand = $ffmpegCommand . "-i ".$path." ";
+        $ffmpegCommand = $ffmpegCommand . "-i '".$path."' ";
     }
 
     $ffmpegCommand = $ffmpegCommand . "-filter_complex ";
@@ -79,6 +91,7 @@ function compile($downloadFile) {
     $ffmpegCommand = $ffmpegCommand . " -map \"[v]\" -map \"[a]\" -c:v libx264 -c:a aac -movflags +faststart compilation.mp4";
 
     echo $ffmpegCommand . "\n\n";
+    chdir($downloadFolder);
     exec($ffmpegCommand);
 }
 
