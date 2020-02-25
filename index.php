@@ -44,12 +44,12 @@ foreach ($urls as $url) {
 	    
 	    $fileName = "file_" . $ind++ . ".mp4";
 	    download($src, $downloadFolder . "/" . $fileName);
-	    fwrite($donloadedFile, $fileName . "\n");
+	    fwrite($donloadedFile, $downloadFolder . "/" . $fileName . "\n");
 	    echo $fileName . " downloaded!\n";
 	}
 	sleep(5);
 }
-fwrite($donloadedFile, "../end.mp4");
+fwrite($donloadedFile, "end.mp4");
 fclose($donloadedFile);
 
 echo "\n\nStart compilation... \n";
@@ -65,7 +65,7 @@ function compile($downloadFolder, $downloadFile) {
     $files = fopen($downloadFolder . $downloadFile, "r");
     while (!feof($files)) {
         $current_line = fgets($files);
-        $paths[] = $downloadFolder . "/" . trim(str_replace("\r\n","",$current_line));
+        $paths[] = trim(str_replace("\r\n","",$current_line));
     }
 
     $ffmpegCommand = "ffmpeg -y -loglevel warning ";
