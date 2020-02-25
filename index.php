@@ -2,7 +2,7 @@
 
 $downloadFolder = "download";
 
-if (file_exists($downloadFolder) { 
+if (file_exists($downloadFolder)) { 
     delete_directory($downloadFolder);
 }
 
@@ -119,8 +119,8 @@ function download($url, $output)
 }
 
 function delete_directory($dirname) {
-         if (is_dir($dirname))
-           $dir_handle = opendir($dirname);
+     if (is_dir($dirname))
+          $dir_handle = opendir($dirname);
      if (!$dir_handle)
           return false;
      while($file = readdir($dir_handle)) {
