@@ -1,7 +1,7 @@
 <?php 
 
 $downloadFolder = "download";
-/*
+
 if (file_exists($downloadFolder) { 
     delete_directory($downloadFolder);
 }
@@ -50,7 +50,7 @@ foreach ($urls as $url) {
 	sleep(5);
 }
 fwrite($donloadedFile, "../end.mp4");
-fclose($donloadedFile);*/
+fclose($donloadedFile);
 
 echo "\n\nStart compilation... \n";
 
@@ -65,12 +65,12 @@ function compile($downloadFolder, $downloadFile) {
     $files = fopen($downloadFolder . $downloadFile, "r");
     while (!feof($files)) {
         $current_line = fgets($files);
-        $paths[] = trim(str_replace("\r\n","",$current_line));
+        $paths[] = $downloadFolder . "/" . trim(str_replace("\r\n","",$current_line));
     }
 
     $ffmpegCommand = "ffmpeg -y -loglevel warning ";
     foreach ($paths as $path) {
-        $ffmpegCommand = $ffmpegCommand . "-i '".$path."' ";
+        $ffmpegCommand = $ffmpegCommand . "-i ".$path." ";
     }
 
     $ffmpegCommand = $ffmpegCommand . "-filter_complex ";
@@ -91,7 +91,6 @@ function compile($downloadFolder, $downloadFile) {
     $ffmpegCommand = $ffmpegCommand . " -map \"[v]\" -map \"[a]\" -c:v libx264 -c:a aac -movflags +faststart compilation.mp4";
 
     echo $ffmpegCommand . "\n\n";
-    chdir($downloadFolder);
     exec($ffmpegCommand);
 }
 
